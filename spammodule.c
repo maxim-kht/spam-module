@@ -1,18 +1,5 @@
 #include <Python.h>
 
-// static PyObject *SpamError;
-
-// PyMODINIT_FUNC initspam(void) {
-//     PyObject *m;
-
-//     m = Py_InitModule("spam", SpamMethods);
-//     if (m == NULL) return;
-
-//     SpamError = PyErr_NewException("spam.error", NULL, NULL);
-//     Py_INCREF(SpamError);
-//     PyModule_AddObject(m, "error", SpamError);
-// }
-
 
 static PyObject *spam_greet(PyObject *self, PyObject *args)
 {
@@ -21,7 +8,6 @@ static PyObject *spam_greet(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s", &name)) return NULL;
 
     printf("Hi %s!", name);
-
     Py_RETURN_NONE;
 }
 
@@ -34,13 +20,6 @@ static PyObject *spam_system(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s", &command)) return NULL;
 
     sts = system(command);
-
-    // if (sts < 0) {
-    //     PyErr_SetString(SpamError, "System command failed");
-    //     return NULL;
-    // }
-
-    // return PyLong_FromLong(sts);
     return Py_BuildValue("i", sts);
 }
 
@@ -52,7 +31,6 @@ static PyObject *spam_strlen(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s", &string)) return NULL;
 
     unsigned long len = strlen(string);
-
     return Py_BuildValue("i", len);
 }
 
@@ -67,11 +45,19 @@ PyObject *makelist(int array[], int len)
 }
 
 
+static PyObject *SpamError;
+
+
 static PyObject *spam_fibonacci(PyObject *self, PyObject *args)
 {
     int num_terms;
 
     if (!PyArg_ParseTuple(args, "i", &num_terms)) return NULL;
+
+    if (num_terms < 0) {
+        PyErr_SetString(SpamError, "Number of terms cannot be negative.");
+        return NULL;
+    }
 
     int numbers[num_terms];
     int first = 0;
@@ -88,10 +74,8 @@ static PyObject *spam_fibonacci(PyObject *self, PyObject *args)
         }
         numbers[i] = next;
     }
-
     return makelist(numbers, num_terms);
 }
-
 
 
 static PyMethodDef SpamMethods[] = {
@@ -104,12 +88,19 @@ static PyMethodDef SpamMethods[] = {
 };
 
 
-PyMODINIT_FUNC initspam(void) {
-    (void) Py_InitModule("spam", SpamMethods);
+PyMODINIT_FUNC initspam(void)
+{
+    PyObject *m = Py_InitModule("spam", SpamMethods);
+    if (m == NULL) return;
+
+    SpamError = PyErr_NewException("spam.error", NULL, NULL);
+    Py_INCREF(SpamError);
+    PyModule_AddObject(m, "error", SpamError);
 }
 
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     // Pass argv[0] to the Python interpreter
     Py_SetProgramName(argv[0]);
 
