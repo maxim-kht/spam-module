@@ -1,0 +1,7 @@
+Learning to extend Python with C using https://docs.python.org/2/extending/extending.html.
+
+Usage:
++ virtualenv env (requires Python2)
++ python setup.py install
+
+Now you can import module in python shell and execute few of its functions.
